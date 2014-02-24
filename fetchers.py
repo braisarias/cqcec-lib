@@ -17,12 +17,6 @@
 
 class HitronConnectionsFetcher(object):
 
-    SIMPLE_IP_REGEX = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-    HITRON_REGEXP = r"(\d+):\s+([A-Z]+)\s+(" + SIMPLE_IP_REGEX + "):(\d+)\s+<-->(" \
-        + SIMPLE_IP_REGEX + "):(\d+)\s+\[(" + SIMPLE_IP_REGEX + "):(\d+)\].*"
-    USERNAME_TELNET_STRING = "Username:"
-    PASSWORD_TELNET_STRING = "Password:"
-
     def __init__(self,user,password):
         self.user = user
         self.password = password
@@ -40,22 +34,25 @@ class HitronConnectionsFetcher(object):
 
     def get_telnet_dump(self):
         from telnetlib import Telnet
-        from time import sleep
-        host = get_host_name ()
+        USERNAME_TELNET_STRING = "Username:"
+        PASSWORD_TELNET_STRING = "Password:"
+        host = self.host
         tn = Telnet(self.host)
         tn.read_until(USERNAME_TELNET_STRING)
         tn.write(self.user + "\n")
         tn.read_until(PASSWORD_TELNET_STRING)
         tn.write(self.password + "\n\n")
         tn.write("firewall\n\n")
-        tn.write("dump\n")
-        tn.read_until("Active Connections")
-        text = "Active Connections" +  tn.read_until("Returned")
+        tn.write("dump -ps\n")
+        text = tn.read_until("Returned")
         tn.write("exit\n\nexit\n")
         return text
 
     def get_connections(self):
         import re
-        regexp = re.compile(rexp)
-        connections_list = regexp.findall(self.get_telnet_dump())
-        return [ConnectionInfo(...) for x in connections_list]
+        SIMPLE_IP_REGEX = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+        HITRON_REGEXP = r"(\d+):\s+([A-Z]+)\s+(" + SIMPLE_IP_REGEX + "):?(\d+)?\s+<-->(" + SIMPLE_IP_REGEX + "):?(\d+)?\s+\[(" + SIMPLE_IP_REGEX + "):?(\d+)?\]"
+        regexp = re.compile(HITRON_REGEXP)
+        text = self.get_telnet_dump()
+        connections_list = regexp.findall(text)
+        return [ConnectionInfo(x[2], x[3], x[6], x[7], x[1]) for x in connections_list]

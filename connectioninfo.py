@@ -18,37 +18,42 @@
 class ConnectionInfo(object):
     """Class that encapsulates info about a connection."""
 
-    COMPLEX_IP_REGEX = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(" \
-    + "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-
-    def check_ip (ip):
+    def check_ip (self, ip):
         import re
+        COMPLEX_IP_REGEX = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(" \
+            + "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
         regex = re.compile(COMPLEX_IP_REGEX)
         return regex.match(ip) != None
-        return False
 
-    def check_proto (proto):
-        if proto.lower() in ("tcp", "udp"):
+    def check_proto (self, proto):
+        if proto.lower() in ("tcp", "udp", "igmp"):
             return False
         return True
 
-    def check_port (port):
+    def check_port (self, port):
         try:
             num = int(port)
-            return num > 0 && num < 65535
+            return num > 0 and num < 65535
         except ValueError:
             return False
 
-    def __init__(self, ip, proto, port):
+    def __init__(self, ip_orig, port_orig, ip_dest, port_dest, proto):
         super(ConnectionInfo, self).__init__()
-
-        if ! (check_port(port) && check_proto(proto) && check_ip(ip)):
-            raise ValueError
-
-        self.ip = ip
+        if not self.check_ip(ip_orig):
+            raise ValueError("IP origen")
+        if not self.check_ip(ip_dest):
+            raise ValueError("IP dest")
+        if port_orig != "" and not self.check_port(port_orig):
+            raise ValueError("port origen")
+        if port_dest != "" and not self.check_port(port_dest):
+            raise ValueError("Port dest")
+        self.ip_orig = ip_dest
+        self.port_orig = port_dest
         self.proto = proto
-        self.port = port
+        self.ip_dest = ip_dest
+        self.port_dest = port_dest
 
     def json_dump (self):
         import json
-        return jsom.dump ({"ip":self.ip,"proto":self.proto,"port":self.port})
+        return json.dumps({"ip_orig":self.ip_orig, "port_orig":self.port_orig, \
+            "ip_dest":self.ip_dest, "port_dest":self.port_dest, "proto":self.proto})
