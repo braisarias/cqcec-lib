@@ -17,10 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+from src import ipserviceinfo
 import argparse
-import sys
-from src import ipinfofetcher
-from src import cache
 
 def IPAddress(ip):
     import re
@@ -31,30 +30,27 @@ def IPAddress(ip):
     else:
         return ip
 
-def get_ip_info (ip):
-    info = cache.get_ip_info_cache(ip)
-    if info:
-        return info
-    else:
-        info = ipinfofetcher.get_ip_info_senderbase(ip)
-        cache.set_ip_info_cache(ip,info)
-        return info
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Get information about the IP and port provided as parameters.', add_help=False)
+def parse_params ():
+    parser = argparse.ArgumentParser(add_help=False, \
+        description='Get information about the IP and port provided as parameters.')
     parser.add_argument("-ip", type=IPAddress, required=True, help = 'the IP')
     parser.add_argument("-p", "--port", type=int, required=False, help='the port')
-    parser.add_argument("-f", "--format", required=False, default="plain", choices=['xml','plain','json'],  \
+    parser.add_argument("-f", "--format", required=False, default="plain", \
+        choices=['xml','plain','json'],  \
         help='the format of the %(prog)s output (default: %(default)s)')
     args = parser.parse_args()
-    
-    ipinfo = get_ip_info (args.ip)
+    return (args.ip, args.port, args.format)
 
-    if args.port != None:
-        portinfo = ipinfofetcher.get_service_info(args.port)
+if __name__ == '__main__':
+    (ip, port, frmt) = parse_params()
 
-    if args.format == "plain":
-        print "IP :: ", args.ip
+    ipinfo = ipserviceinfo.get_ip_info (ip)
+
+    if port != None:
+        portinfo = ipserviceinfo.get_service_info(port)
+
+    if frmt == "plain":
+        print "IP :: ", ip
         print "Network Owner :: ", ipinfo["Network Owner"]
         print "Domain :: ", ipinfo["Domain"]
         print "HostName :: ", ipinfo["Hostname"]
@@ -64,9 +60,9 @@ if __name__ == '__main__':
             pass
         print "Web Reputation :: ", ipinfo["Web Reputation"]
         print "Email Reputation :: ", ipinfo["Email Reputation"]
-        if args.port != None:
+        if port != None:
             print "Service :: ", portinfo
-    elif args.format == "json":
+    elif frmt == "json":
         pass
     else:
         pass
