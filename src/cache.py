@@ -34,7 +34,7 @@ def get_ip_info_cache(ip):
 			c = conn.execute("SELECT * FROM IPCache WHERE ip=:ip", {"ip":ip}).fetchone()
 			if c == None:
 				return {}
-			(ip_info,info) = c
+			(ip_db, info) = c
 		except sqlite3.OperationalError, TypeError:
 			return {}
 	assert(ip == ip_db)
