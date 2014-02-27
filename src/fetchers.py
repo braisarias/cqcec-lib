@@ -54,8 +54,8 @@ class HitronConnectionsFetcher(object):
     def get_connections(self):
         import re
         SIMPLE_IP_REGEX = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-        HITRON_REGEXP = r"(\d+):\s+([A-Z]+)\s+(" + SIMPLE_IP_REGEX + "):?(\d+)?\s+<-->(" + SIMPLE_IP_REGEX + "):?(\d+)?\s+\[(" + SIMPLE_IP_REGEX + "):?(\d+)?\]"
+        HITRON_REGEXP = r"(\d+):\s+([A-Z]+)\s+(" + SIMPLE_IP_REGEX + "):?(\d+)?\s+<-->(" + SIMPLE_IP_REGEX + "):?(\d+)?\s+\[(" + SIMPLE_IP_REGEX + "):?(\d+)?\].*(Incoming|Outgoing).*"
         regexp = re.compile(HITRON_REGEXP)
         text = self.get_telnet_dump()
         connections_list = regexp.findall(text)
-        return [ConnectionInfo(x[2], x[3], x[6], x[7], x[1]) for x in connections_list]
+        return [ConnectionInfo(x[2], x[3], x[6], x[7], x[1], x[8]) for x in connections_list]
