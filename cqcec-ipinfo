@@ -1,0 +1,72 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# "Con quien carallo estoy conectado"
+# Copyright (C) 2014  Marcos Chavarria Teijeiro.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+import sys
+from src import ipinfofetcher
+from src import cache
+
+def IPAddress(ip):
+    import re
+    COMPLEX_IP_REGEX = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(" \
+            + "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    if re.compile(COMPLEX_IP_REGEX).match(ip) == None:
+        raise argparse.ArgumentTypeError("'%s' is not a valid IP Address" % (ip,))
+    else:
+        return ip
+
+def get_ip_info (ip):
+    info = cache.get_ip_info_cache(ip)
+    if info:
+        return info
+    else:
+        info = ipinfofetcher.get_ip_info_senderbase(ip)
+        cache.set_ip_info_cache(ip,info)
+        return info
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Get information about the IP and port provided as parameters.', add_help=False)
+    parser.add_argument("-ip", type=IPAddress, required=True, help = 'the IP')
+    parser.add_argument("-p", "--port", type=int, required=False, help='the port')
+    parser.add_argument("-f", "--format", required=False, default="plain", choices=['xml','plain','json'],  \
+        help='the format of the %(prog)s output (default: %(default)s)')
+    args = parser.parse_args()
+    
+    ipinfo = get_ip_info (args.ip)
+
+    if args.port != None:
+        portinfo = ipinfofetcher.get_service_info(args.port)
+
+    if args.format == "plain":
+        print "IP :: ", args.ip
+        print "Network Owner :: ", ipinfo["Network Owner"]
+        print "Domain :: ", ipinfo["Domain"]
+        print "HostName :: ", ipinfo["Hostname"]
+        try:
+            print "Web Category :: " + ipinfo["Web Category"]
+        except KeyError:
+            pass
+        print "Web Reputation :: ", ipinfo["Web Reputation"]
+        print "Email Reputation :: ", ipinfo["Email Reputation"]
+        if args.port != None:
+            print "Service :: ", portinfo
+    elif args.format == "json":
+        pass
+    else:
+        pass
