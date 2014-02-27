@@ -17,26 +17,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-def set_ip_info_cache(ip, info):
-	import sqlite3
-	import json
-	with sqlite3.connect('cache_db') as conn:
-		c = conn.cursor()
-		c.execute("CREATE TABLE IF NOT EXISTS IPCache (ip text, info text)")
-		c.execute("INSERT INTO IPCache VALUES (:ip, :info)", {"ip":ip, "info":json.dumps(info)})
-		conn.commit()
+import sqlite3
+import json
+from time import time
 
-def get_ip_info_cache(ip):
-	import sqlite3
-	import json
-	with sqlite3.connect('cache_db') as conn:
-		try:
-			c = conn.execute("SELECT * FROM IPCache WHERE ip=:ip", {"ip":ip}).fetchone()
-			if c == None:
+class Cache(object):
+	
+	def __init__(self, cache_file, expired_time):
+		self.cache_file = cache_file
+		self.expired_time = expired_time
+		
+	def set_info(self, ip, info):
+		with sqlite3.connect(self.cache_file) as conn:
+			c = conn.cursor()
+			c.execute("CREATE TABLE IF NOT EXISTS IPCache (ip text, info text, time int)")
+			c.execute("DELETE FROM IPCache WHERE ip=:ip", {"ip":ip})
+			c.execute("INSERT INTO IPCache VALUES (:ip, :info, :time)", {"ip":ip, \
+				"info":json.dumps(info), "time": int(time())})
+			conn.commit()
+
+	def get_info(self, ip):
+		with sqlite3.connect(self.cache_file) as conn:
+			try:
+				c = conn.execute("SELECT * FROM IPCache WHERE ip=:ip", {"ip":ip}).fetchone()
+				if c == None:
+					return {}
+				(ip_db, info, the_time) = c
+		
+				assert(ip == ip_db)
+
+				if int(time()) - the_time > self.expired_time:
+					return {}
+
+				return json.loads(info)
+			except sqlite3.OperationalError, TypeError:
 				return {}
-			(ip_db, info) = c
-		except sqlite3.OperationalError, TypeError:
-			return {}
-	assert(ip == ip_db)
-	return json.loads(info)
+		
 
