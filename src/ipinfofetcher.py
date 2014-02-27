@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # "Con quien carallo estoy conectado"
 # Copyright (C) 2014  Marcos Chavarría Teijeiro.
 
