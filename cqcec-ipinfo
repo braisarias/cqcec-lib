@@ -20,6 +20,7 @@
 
 from src import ipserviceinfo
 import argparse
+import json
 
 def IPAddress(ip):
     import re
@@ -36,7 +37,7 @@ def parse_params ():
     parser.add_argument("-ip", type=IPAddress, required=True, help = 'the IP')
     parser.add_argument("-p", "--port", type=int, required=False, help='the port')
     parser.add_argument("-f", "--format", required=False, default="plain", \
-        choices=['xml','plain','json'],  \
+        choices=['plain','json'],  \
         help='the format of the %(prog)s output (default: %(default)s)')
     args = parser.parse_args()
     return (args.ip, args.port, args.format)
@@ -63,6 +64,10 @@ if __name__ == '__main__':
         if port != None:
             print "Service :: ", portinfo
     elif frmt == "json":
-        pass
+        d = ipinfo
+        d["IP"] = ip
+        if port != None:
+            d["Service"] = portinfo
+        print json.dumps(d)
     else:
-        pass
+        assert(False)
