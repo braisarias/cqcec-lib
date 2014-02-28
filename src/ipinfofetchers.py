@@ -40,3 +40,35 @@ class IPInfoFetcherSenderBase(object):
 				columnas[0].find("span").extract()
 			d[str(columnas[0].text)] = str(columnas[1].text)
 		return d
+
+class IPInfoFetcherRIPE(object):
+	def get_info(self, ip):
+		import urllib2
+		from xml.dom import minidom
+		ret_dic = {}
+		url = "http://rest.db.ripe.net/search.xml?query-string=" + ip
+		try:
+			xml_text = urllib2.urlopen(url).read()
+		except Exception:
+			pass
+		xmldoc = minidom.parseString(xml_text)
+		objs = xmldoc.getElementsByTagName('object')
+		objs_dic = {x.attributes["type"].value : x for x in objs}
+		try:
+			route_obj = objs_dic[u"route"]
+		except KeyError:
+			route_obj = False
+		try:
+			inetnum_obj = objs_dic[u"inetnum"]
+		except KeyError:
+			inetnum_obj = False
+		if inetnum_obj:
+			inetnum_inf = {x.attributes["name"].value : x.attributes["value"].value \
+				for x in inetnum_obj.getElementsByTagName("attribute")}
+			ret_dic["INetNum Country"] = inetnum_inf["country"]
+			ret_dic["INetNum Description"] = inetnum_inf["descr"]
+		if route_obj:
+			route_info = {x.attributes["name"].value : x.attributes["value"].value \
+				for x in route_obj.getElementsByTagName("attribute")}
+			ret_dic["Route Network"] =  route_info["route"]
+		return ret_dic
