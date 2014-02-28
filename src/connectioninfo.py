@@ -36,7 +36,7 @@ class ConnectionInfo(object):
             return False
 
     def check_dir (self, direct):
-    	return direct.lower() in ("incoming", "outgoing")
+        return direct.lower() in ("incoming", "outgoing")
 
     def __init__(self, ip_orig, port_orig, ip_dest, port_dest, proto, direction):
         super(ConnectionInfo, self).__init__()
@@ -48,7 +48,7 @@ class ConnectionInfo(object):
             raise ValueError("port origen")
         if port_dest != "" and not self.check_port(port_dest):
             raise ValueError("Port dest")
-		if direction != "" and not self.check_dir(direction):
+        if direction != "" and not self.check_dir(direction):
             raise ValueError("Direction")
         self.ip_orig = ip_orig
         self.port_orig = port_orig
