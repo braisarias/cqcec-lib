@@ -50,24 +50,16 @@ if __name__ == '__main__':
     if port != None:
         portinfo = ipserviceinfo.get_service_info(port)
 
+    info_dict = ipinfo
+    info_dict["IP"] = ip
+
+    if port != None:
+        info_dict["Service"] = portinfo
+
     if frmt == "plain":
-        print "IP :: ", ip
-        print "Network Owner :: ", ipinfo["Network Owner"]
-        print "Domain :: ", ipinfo["Domain"]
-        print "HostName :: ", ipinfo["Hostname"]
-        try:
-            print "Web Category :: " + ipinfo["Web Category"]
-        except KeyError:
-            pass
-        print "Web Reputation :: ", ipinfo["Web Reputation"]
-        print "Email Reputation :: ", ipinfo["Email Reputation"]
-        if port != None:
-            print "Service :: ", portinfo
+        for k in info_dict:
+            print k + " :: " + info_dict[k]
     elif frmt == "json":
-        d = ipinfo
-        d["IP"] = ip
-        if port != None:
-            d["Service"] = portinfo
-        print json.dumps(d)
+        print json.dumps(info_dict)
     else:
         assert(False)
