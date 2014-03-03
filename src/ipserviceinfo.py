@@ -28,6 +28,7 @@ def get_ip_info(ip):
     cachefetcher = cache.Cache("cache_db", 60)
     ipinfofetcher_sb = ipinfofetchers.IPInfoFetcherSenderBase()
     ipinfofetcher_ripe = ipinfofetchers.IPInfoFetcherRIPE()
+    ipinfofetcher_whois = ipinfofetchers.IPInfoFetcherWhois()
 
     info = cachefetcher.get_info(ip)
     if info:
@@ -35,7 +36,8 @@ def get_ip_info(ip):
     else:
         info_sb = ipinfofetcher_sb.get_info(ip)
         info_ripe = ipinfofetcher_ripe.get_info(ip)
-        info = dict(info_sb.items() + info_ripe.items())
+        info_whois = ipinfofetcher_whois.get_info(ip)
+        info = dict(info_sb.items() + info_ripe.items() + info_whois.items())
         cachefetcher.set_info(ip, info)
         return info
 

@@ -77,3 +77,31 @@ class IPInfoFetcherRIPE(object):
                           route_obj.getElementsByTagName("attribute")}
             ret_dic["Route Network"] = route_info["route"]
         return ret_dic
+
+
+class IPInfoFetcherWhois(object):
+
+    def get_info(self, ip):
+        import socket
+        import whois
+
+        try:
+            (host, _, _) = socket.gethostbyaddr(ip)
+        except Exception:
+            return {}
+
+        w = whois.whois(host)
+        text = w.__dict__["text"]
+        d = {}
+        for line in text.split("\n"):
+            x = line.split(":")
+            if len(x) != 2:
+                continue
+            key = "WHOIS_" + x[0]
+            value = x[1].strip()
+            if key in d:
+                d[key] = d[key] + ", " + value
+            else:
+                d[key] = value
+
+        return d
