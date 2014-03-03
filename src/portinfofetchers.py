@@ -19,8 +19,8 @@
 
 
 class PortInfoFetcher(object):
-	"""docstring for PortInfoFetcher"""
+    """docstring for PortInfoFetcher"""
 
-	def get_info (self, port):
-		import socket
-		return socket.getservbyport(port)
+    def get_info(self, port):
+        import socket
+        return socket.getservbyport(port)

@@ -22,38 +22,42 @@ from src import ipserviceinfo
 import argparse
 import json
 
+
 def IPAddress(ip):
     import re
     COMPLEX_IP_REGEX = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(" \
-            + "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    if re.compile(COMPLEX_IP_REGEX).match(ip) == None:
+                       + "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    if re.compile(COMPLEX_IP_REGEX).match(ip) is None:
         raise argparse.ArgumentTypeError("'%s' is not a valid IP Address" % (ip,))
     else:
         return ip
 
-def parse_params ():
-    parser = argparse.ArgumentParser(add_help=False, \
-        description='Get information about the IP and port provided as parameters.')
-    parser.add_argument("-ip", type=IPAddress, required=True, help = 'the IP')
+
+def parse_params():
+    parser = argparse.ArgumentParser(add_help=False,
+                                     description='Get information about the " \
+                                     + "IP and port provided as parameters.')
+    parser.add_argument("-ip", type=IPAddress, required=True, help='the IP')
     parser.add_argument("-p", "--port", type=int, required=False, help='the port')
-    parser.add_argument("-f", "--format", required=False, default="plain", \
-        choices=['plain','json'],  \
-        help='the format of the %(prog)s output (default: %(default)s)')
+    parser.add_argument("-f", "--format", required=False, default="plain",
+                        choices=['plain', 'json'],
+                        help='the format of the %(prog)s output" + \
+                        " (default: %(default)s)')
     args = parser.parse_args()
     return (args.ip, args.port, args.format)
 
 if __name__ == '__main__':
     (ip, port, frmt) = parse_params()
 
-    ipinfo = ipserviceinfo.get_ip_info (ip)
+    ipinfo = ipserviceinfo.get_ip_info(ip)
 
-    if port != None:
+    if port is not None:
         portinfo = ipserviceinfo.get_service_info(port)
 
     info_dict = ipinfo
     info_dict["IP"] = ip
 
-    if port != None:
+    if port is not None:
         info_dict["Service"] = portinfo
 
     if frmt == "plain":

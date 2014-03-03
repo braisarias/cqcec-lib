@@ -22,7 +22,8 @@ import cache
 import ipinfofetchers
 import portinfofetchers
 
-def get_ip_info (ip):
+
+def get_ip_info(ip):
 
     cachefetcher = cache.Cache("cache_db", 60)
     ipinfofetcher_sb = ipinfofetchers.IPInfoFetcherSenderBase()
@@ -38,7 +39,7 @@ def get_ip_info (ip):
         cachefetcher.set_info(ip, info)
         return info
 
-def get_service_info (port):
 
-	portinfofetcher = portinfofetchers.PortInfoFetcher()
-	return portinfofetcher.get_info(port)
+def get_service_info(port):
+    portinfofetcher = portinfofetchers.PortInfoFetcher()
+    return portinfofetcher.get_info(port)

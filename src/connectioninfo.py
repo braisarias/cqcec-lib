@@ -21,24 +21,25 @@
 class ConnectionInfo(object):
     """Class that encapsulates info about a connection."""
 
-    def check_ip (self, ip):
+    def check_ip(self, ip):
         import re
-        COMPLEX_IP_REGEX = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(" \
-            + "[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+        COMPLEX_IP_REGEX = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25" + \
+            "[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
         regex = re.compile(COMPLEX_IP_REGEX)
-        return regex.match(ip) != None
+        return regex.match(ip) is not None
 
-    def check_port (self, port):
+    def check_port(self, port):
         try:
             num = int(port)
             return num > 0 and num < 65535
         except ValueError:
             return False
 
-    def check_dir (self, direct):
+    def check_dir(self, direct):
         return direct.lower() in ("incoming", "outgoing")
 
-    def __init__(self, ip_orig, port_orig, ip_dest, port_dest, proto, direction):
+    def __init__(self, ip_orig, port_orig, ip_dest, port_dest, proto,
+                 direction):
         super(ConnectionInfo, self).__init__()
         if not self.check_ip(ip_orig):
             raise ValueError("IP origen")
@@ -57,8 +58,9 @@ class ConnectionInfo(object):
         self.port_dest = port_dest
         self.dir = direction
 
-    def json_dump (self):
+    def json_dump(self):
         import json
-        return json.dumps({"ip_orig":self.ip_orig, "port_orig":self.port_orig, \
-            "ip_dest":self.ip_dest, "port_dest":self.port_dest, "proto":self.proto, \
-            "dir": self.dir})
+        return json.dumps({"ip_orig": self.ip_orig, "port_orig":
+                           self.port_orig, "ip_dest": self.ip_dest,
+                           "port_dest": self.port_dest, "proto":
+                           self.proto, "dir": self.dir})
