@@ -24,9 +24,24 @@ from time import time
 
 class Cache(object):
 
-    def __init__(self, cache_file, expired_time):
-        self.cache_file = cache_file
-        self.expired_time = expired_time
+    def __init__(self):
+
+        config = self.read_params()
+
+        self.cache_file = config["name"]
+        self.expired_time = config["timeout"]
+
+    def read_params(self):
+        import ConfigParser
+        cfg = ConfigParser.ConfigParser()
+        cfg.read(["config_params.cfg"])
+        try:
+            timeout = cfg.get("cache", "timeout")
+            name = cfg.get("cache", "name")
+        except ConfigParser.NoOptionError:
+            raise ValueError("There are some missing config params in the " +
+                             "configuration file.")
+        return {"timeout": timeout, "name": name}
 
     def set_info(self, ip, info):
         with sqlite3.connect(self.cache_file) as conn:

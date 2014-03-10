@@ -25,7 +25,7 @@ import portinfofetchers
 
 def get_ip_info(ip):
 
-    cachefetcher = cache.Cache("cache_db", 60)
+    cachefetcher = cache.Cache()
 
     info = cachefetcher.get_info(ip)
     if info:
