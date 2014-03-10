@@ -105,3 +105,27 @@ class IPInfoFetcherWhois(object):
                 d[key] = value
 
         return d
+
+
+class IPInfoFetcherGSafeBrowsing(object):
+
+    def read_params(self):
+        import ConfigParser
+        cfg = ConfigParser.ConfigParser()
+        cfg.read(["config_params.cfg"])
+        try:
+            api_key = cfg.get("google_safe_browsing", "api_key")
+        except ConfigParser.NoOptionError:
+            raise ValueError("The Google Safe Browsing API key is not found " +
+                             " in the configuration file.")
+        return {"api_key": api_key}
+
+    def get_info(self, ip):
+        from safebrowsinglookup import SafebrowsinglookupClient
+
+        config = self.read_params()
+        client = SafebrowsinglookupClient(key=config["api_key"])
+
+        res_dic = client.lookup(ip)
+
+        return {"google_safe_browsing": res_dic[ip]}

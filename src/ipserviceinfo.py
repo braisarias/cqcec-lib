@@ -26,18 +26,21 @@ import portinfofetchers
 def get_ip_info(ip):
 
     cachefetcher = cache.Cache("cache_db", 60)
-    ipinfofetcher_sb = ipinfofetchers.IPInfoFetcherSenderBase()
-    ipinfofetcher_ripe = ipinfofetchers.IPInfoFetcherRIPE()
-    ipinfofetcher_whois = ipinfofetchers.IPInfoFetcherWhois()
 
     info = cachefetcher.get_info(ip)
     if info:
         return info
     else:
-        info_sb = ipinfofetcher_sb.get_info(ip)
-        info_ripe = ipinfofetcher_ripe.get_info(ip)
-        info_whois = ipinfofetcher_whois.get_info(ip)
-        info = dict(info_sb.items() + info_ripe.items() + info_whois.items())
+        lista = []
+        lista.append(ipinfofetchers.IPInfoFetcherSenderBase())
+        lista.append(ipinfofetchers.IPInfoFetcherRIPE())
+        lista.append(ipinfofetchers.IPInfoFetcherWhois())
+        lista.append(ipinfofetchers.IPInfoFetcherGSafeBrowsing())
+
+        for fetcher in lista:
+            fet_info = fetcher.get_info(ip)
+            info = dict(info.items() + fet_info.items())
+
         cachefetcher.set_info(ip, info)
         return info
 
