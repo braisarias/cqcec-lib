@@ -90,7 +90,11 @@ class IPInfoFetcherWhois(object):
         except Exception:
             return {}
 
-        w = whois.whois(host)
+        try:
+            w = whois.whois(host)
+        except Exception:
+            return {}
+
         text = w.__dict__["text"]
         d = {}
         for line in text.split("\n"):

@@ -1,0 +1,123 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# "Con quien carallo estoy conectado"
+# Copyright (C) 2014  Marcos Chavarria Teijeiro.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+import argparse
+from src import fetchers
+from src import ipserviceinfo
+
+
+class CQCEC(object):
+    """docstring for CQCEC"""
+
+    def read_hitron_config(self):
+        import ConfigParser
+        cfg = ConfigParser.ConfigParser()
+        cfg.read(["config_params.cfg"])
+
+        try:
+            usuario = cfg.get("login_hitron", "usuario")
+            password = cfg.get("login_hitron", "password")
+        except ConfigParser.NoOptionError:
+            raise ValueError("Some options were not found at config file.")
+
+        return {"user": usuario, "pass": password}
+
+    def parse_params(self):
+        parser = argparse.ArgumentParser(add_help=True,
+                                         description='Get information about" \
+                                         + " the current connections.')
+        parser.add_argument("-o", "--origin", required=False, default="router",
+                            choices=['router', 'dpi'],
+                            help='the format of the %(prog)s output" + \
+                            " (default: %(default)s)')
+        parser.add_argument("-d", "--direction", required=False,
+                            default="outgoing", choices=["incoming",
+                                                         "outgoing"])
+        args = parser.parse_args()
+
+        self.router = args.origin == "router"
+        self.direction = args.direction
+
+    def get_connection_info(self, connection):
+        if connection.dir == "Outgoing":
+            own_ip = connection.ip_orig
+            own_port = connection.port_orig
+            other_ip = connection.ip_dest
+            other_port = connection.port_dest
+        else:
+            own_ip = connection.ip_dest
+            own_port = connection.port_dest
+            other_ip = connection.ip_orig
+            other_port = connection.port_orig
+
+        ip_info = ipserviceinfo.get_ip_info(other_ip)
+        port_info = ipserviceinfo.get_service_info(int(other_port))
+        ret_dic = {"own_ip": own_ip}
+
+        return dict(ret_dic.items() + ip_info.items() + port_info.items())
+
+    def get_router_ip(self):
+        import socket
+        import struct
+        with open("/proc/net/route") as fh:
+            for line in fh:
+                fields = line.strip().split()
+                if fields[1] != '00000000' or not int(fields[3], 16) & 2:
+                    continue
+                return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
+
+    def get_router_mac(self, ip):
+        import subprocess
+        arp_table = subprocess.check_output(["arp", "-an"]).strip().split("\n")
+        for line in arp_table:
+            fields = line.split(" ")
+            if fields[1][1:-1] == ip:
+                return fields[3]
+
+    def router_connections_info(self, direction):
+        import json
+        hitron_config = self.read_hitron_config()
+        ip_router = self.get_router_ip()
+        mac_router = self.get_router_mac(ip_router)
+
+        if mac_router.startswith("00:26:5b:"):
+            client = fetchers.HitronConnectionsFetcher(hitron_config["user"],
+                                                       hitron_config["pass"],
+                                                       ip_router)
+        else:
+            raise NotImplementedError
+
+        connections = [x for x in client.get_connections()
+                       if x.dir == "Outgoing"]
+        info_connections = [self.get_connection_info(x)
+                            for x in connections]
+        print json.dumps(info_connections)
+
+    def run(self):
+        self.parse_params()
+        if self.router:
+            self.router_connections_info(self.direction)
+        else:
+            raise NotImplementedError
+
+
+if __name__ == '__main__':
+    client = CQCEC()
+    client.run()
