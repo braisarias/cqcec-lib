@@ -22,13 +22,24 @@ import cache
 import ipinfofetchers
 import portinfofetchers
 
+def get_local_ip_info(ip):
+    return {"ip": ip}
 
 def get_ip_info(ip):
+    import sys
+
+    sys.stderr.write("Fetching info about %15s :: " % ip)
+
+    if ip.startswith("10.") or ip.startswith("192.168.") or \
+       (ip.startswith("172.") and ip.split(".")[1] in range(16, 31)):
+       sys.stderr.write("Done! (LOCAL)\n")
+       return get_local_ip_info(ip)
 
     cachefetcher = cache.Cache()
 
     info = cachefetcher.get_info(ip)
     if info:
+        sys.stderr.write("Done! (CACHE)\n")
         return info
     else:
         lista = []
@@ -42,6 +53,7 @@ def get_ip_info(ip):
             info = dict(info.items() + fet_info.items())
 
         cachefetcher.set_info(ip, info)
+        sys.stderr.write("Done!\n")
         return info
 
 
