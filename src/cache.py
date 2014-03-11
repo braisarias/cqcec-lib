@@ -59,7 +59,8 @@ class Cache(object):
             try:
                 c = conn.execute("SELECT * FROM IPCache WHERE ip=:ip", {"ip":
                                  ip}).fetchone()
-                return {}
+                if (c is None):
+                    return {}
                 (ip_db, info, the_time) = c
 
                 assert(ip == ip_db)
