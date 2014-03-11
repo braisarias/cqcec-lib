@@ -20,20 +20,10 @@
 
 class HitronConnectionsFetcher(object):
 
-    def __init__(self, user, password):
+    def __init__(self, user, password, host):
         self.user = user
         self.password = password
-        self.host = self.get_host_name()
-
-    def get_host_name(self):
-        import socket
-        import struct
-        with open("/proc/net/route") as fh:
-            for line in fh:
-                fields = line.strip().split()
-                if fields[1] != '00000000' or not int(fields[3], 16) & 2:
-                    continue
-                return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
+        self.host = host
 
     def get_telnet_dump(self):
         from telnetlib import Telnet
