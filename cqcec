@@ -91,7 +91,7 @@ class CQCEC(object):
         ip_router = self.get_router_ip()
         mac_router = ipserviceinfo.get_mac_from_local_ip(ip_router)
 
-        if mac_router.startswith("00:26:5b:"):
+        if mac_router[:8] in ("00:26:5b", "68:b6:fc"):
             client = fetchers.HitronConnectionsFetcher(hitron_config["user"],
                                                        hitron_config["pass"],
                                                        ip_router)
@@ -109,7 +109,7 @@ class CQCEC(object):
         if self.router:
             self.router_connections_info(self.direction)
         else:
-            raise NotImplementedError("DPI not implemented.")
+            raise NotImplementedError("DPI not implemented")
 
 
 if __name__ == '__main__':
