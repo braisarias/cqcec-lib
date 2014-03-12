@@ -58,20 +58,22 @@ class CQCEC(object):
     def get_connection_info(self, connection):
         if connection.dir == "Outgoing":
             own_ip = connection.ip_orig
-            own_port = connection.port_orig
             other_ip = connection.ip_dest
             other_port = connection.port_dest
         else:
             own_ip = connection.ip_dest
-            own_port = connection.port_dest
             other_ip = connection.ip_orig
             other_port = connection.port_orig
 
-        ip_info = ipserviceinfo.get_ip_info(other_ip)
+        own_ip_info = ipserviceinfo.get_ip_info(own_ip)
+        own_ip_info = {"own_ip::" + k: own_ip_info[k] for k in own_ip_info}
+        foreign_ip_info = ipserviceinfo.get_ip_info(other_ip)
+        foreign_ip_info = {"foreign_ip::" + k: foreign_ip_info[k] for
+                           k in foreign_ip_info}
         port_info = ipserviceinfo.get_service_info(int(other_port))
-        ret_dic = {"own_ip": own_ip}
 
-        return dict(ret_dic.items() + ip_info.items() + port_info.items())
+        return dict(own_ip_info.items() + foreign_ip_info.items() +
+                    port_info.items())
 
     def get_router_ip(self):
         import socket
@@ -83,19 +85,11 @@ class CQCEC(object):
                     continue
                 return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
 
-    def get_router_mac(self, ip):
-        import subprocess
-        arp_table = subprocess.check_output(["arp", "-an"]).strip().split("\n")
-        for line in arp_table:
-            fields = line.split(" ")
-            if fields[1][1:-1] == ip:
-                return fields[3]
-
     def router_connections_info(self, direction):
         import json
         hitron_config = self.read_hitron_config()
         ip_router = self.get_router_ip()
-        mac_router = self.get_router_mac(ip_router)
+        mac_router = ipserviceinfo.get_mac_from_local_ip(ip_router)
 
         if mac_router.startswith("00:26:5b:"):
             client = fetchers.HitronConnectionsFetcher(hitron_config["user"],

@@ -22,8 +22,44 @@ import cache
 import ipinfofetchers
 import portinfofetchers
 
+
+def get_mac_from_local_ip(ip):
+    import subprocess
+    try:
+        subprocess.check_output(["ping", "-c 1", ip])
+    except:
+        return ""
+    arp_table = subprocess.check_output(["arp", "-an"]).strip().split("\n")
+    for line in arp_table:
+        fields = line.split(" ")
+        if fields[1][1:-1] == ip:
+            return fields[3]
+    return ""
+
+
+def get_device_manufacter_from_mac(mac):
+    import requests
+    url = "http://www.macvendorlookup.com/api/v2/" + mac.replace(":", "-")
+    resp = requests.get(url)
+    if resp.ok:
+        try:
+            return str(resp.json()[0][u"company"])
+        except:
+            pass
+    return ""
+
+def get_hostname_from_local_ip(ip):
+    return ""
+
+
 def get_local_ip_info(ip):
-    return {"ip": ip}
+    mac = get_mac_from_local_ip(ip)
+    mac_vendor = get_device_manufacter_from_mac(mac) if mac else ""
+    hostname = get_hostname_from_local_ip(ip)
+
+    return {"ip": ip, "mac": mac, "mac_vendor": mac_vendor,
+            "hostname": hostname}
+
 
 def get_ip_info(ip):
     import sys
