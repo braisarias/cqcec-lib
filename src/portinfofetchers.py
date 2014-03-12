@@ -23,4 +23,8 @@ class PortInfoFetcher(object):
 
     def get_info(self, port):
         import socket
-        return {"service": socket.getservbyport(port)}
+        try:
+            service = socket.getservbyport(port)
+        except:
+            service = "unknown"
+        return {"service": service}
