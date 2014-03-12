@@ -96,7 +96,7 @@ class CQCEC(object):
                                                        hitron_config["pass"],
                                                        ip_router)
         else:
-            raise NotImplementedError
+            raise NotImplementedError("Router not supported.")
 
         connections = [x for x in client.get_connections()
                        if x.dir == "Outgoing"]
@@ -109,7 +109,7 @@ class CQCEC(object):
         if self.router:
             self.router_connections_info(self.direction)
         else:
-            raise NotImplementedError
+            raise NotImplementedError("DPI not implemented.")
 
 
 if __name__ == '__main__':
