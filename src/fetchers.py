@@ -34,6 +34,9 @@ class HitronConnectionsFetcher(object):
         tn.write(self.user + "\n")
         tn.read_until(PASSWORD_TELNET_STRING)
         tn.write(self.password + "\n\n")
+        if "wifimedia-R" not in tn.read_until("wifimedia-R", 1):
+            raise EnvironmentError("Not able to fetch connections " +
+                                   "from Hitron.")
         tn.write("firewall\n\n")
         tn.write("dump -ps\n")
         text = tn.read_until("Returned")
