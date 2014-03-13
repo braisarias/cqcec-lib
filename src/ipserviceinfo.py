@@ -66,6 +66,7 @@ def get_ip_info(ip):
     import sys
 
     if ip.startswith("10.") or ip.startswith("192.168.") or \
+       ip.startswith("127.") or \
        (ip.startswith("172.") and ip.split(".")[1] in range(16, 31)):
         sys.stderr.write("Done! (LOCAL)\n")
         return get_local_ip_info(ip)
