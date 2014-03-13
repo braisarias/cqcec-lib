@@ -40,7 +40,7 @@ class IPInfoFetcherSenderBase(object):
                 continue
             if columnas[0].find("span"):
                 columnas[0].find("span").extract()
-            d["SENDERBASE_" + str(columnas[0].text)] = str(columnas[1].text)
+            d["SENDERBASE::" + str(columnas[0].text)] = str(columnas[1].text)
         return d
 
 
@@ -69,13 +69,13 @@ class IPInfoFetcherRIPE(object):
             inetnum_inf = {x.attributes["name"].value:
                            x.attributes["value"].value for x in
                            inetnum_obj.getElementsByTagName("attribute")}
-            ret_dic["RIPE_INetNum_Country"] = inetnum_inf["country"]
-            ret_dic["RIPE_INetNum_Description"] = inetnum_inf["descr"]
+            ret_dic["RIPE::INetNum_Country"] = inetnum_inf["country"]
+            ret_dic["RIPE::INetNum_Description"] = inetnum_inf["descr"]
         if route_obj:
             route_info = {x.attributes["name"].value:
                           x.attributes["value"].value for x in
                           route_obj.getElementsByTagName("attribute")}
-            ret_dic["RIPE_Route_Network"] = route_info["route"]
+            ret_dic["RIPE::Route_Network"] = route_info["route"]
         return ret_dic
 
 
@@ -101,7 +101,7 @@ class IPInfoFetcherWhois(object):
             x = line.split(":")
             if len(x) != 2:
                 continue
-            key = "WHOIS_" + x[0]
+            key = "WHOIS::" + x[0]
             value = x[1].strip()
             if key in d:
                 d[key] = d[key] + ", " + value
@@ -132,4 +132,4 @@ class IPInfoFetcherGSafeBrowsing(object):
 
         res_dic = client.lookup(ip)
 
-        return {"google_safe_browsing": res_dic[ip]}
+        return {"GSB::Status": res_dic[ip]}
