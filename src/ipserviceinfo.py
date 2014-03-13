@@ -48,6 +48,7 @@ def get_device_manufacter_from_mac(mac):
             pass
     return ""
 
+
 def get_hostname_from_local_ip(ip):
     return ""
 
@@ -64,12 +65,10 @@ def get_local_ip_info(ip):
 def get_ip_info(ip):
     import sys
 
-    sys.stderr.write("Fetching info about %15s :: " % ip)
-
     if ip.startswith("10.") or ip.startswith("192.168.") or \
        (ip.startswith("172.") and ip.split(".")[1] in range(16, 31)):
-       sys.stderr.write("Done! (LOCAL)\n")
-       return get_local_ip_info(ip)
+        sys.stderr.write("Done! (LOCAL)\n")
+        return get_local_ip_info(ip)
 
     cachefetcher = cache.Cache()
 

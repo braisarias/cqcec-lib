@@ -55,7 +55,20 @@ class CQCEC(object):
         self.router = args.origin == "router"
         self.direction = args.direction
 
-    def get_connection_info(self, connection):
+    def get_connections_info(self, connections):
+        mini_cache = {}
+
+        for con in connections:
+            (info, mini_cache) = self.get_connection_info(con, mini_cache)
+            yield info
+
+    def get_connection_info(self, connection, mini_cache):
+        import sys
+
+        sys.stderr.write("Connection %15s %3s %15s\n" % (connection.ip_orig,
+                         (" -> " if connection.dir == "Outgoing" else " <- "),
+                         connection.ip_dest))
+
         if connection.dir == "Outgoing":
             own_ip = connection.ip_orig
             other_ip = connection.ip_dest
@@ -65,15 +78,33 @@ class CQCEC(object):
             other_ip = connection.ip_orig
             other_port = connection.port_orig
 
-        own_ip_info = ipserviceinfo.get_ip_info(own_ip)
+        sys.stderr.write("\tFetching info about %15s :: " % own_ip)
+
+        if own_ip in mini_cache:
+            sys.stderr.write("Done! (PROCESS CACHE)\n")
+            own_ip_info = mini_cache[own_ip]
+        else:
+            own_ip_info = ipserviceinfo.get_ip_info(own_ip)
+            mini_cache[own_ip] = own_ip_info
         own_ip_info = {"own_ip::" + k: own_ip_info[k] for k in own_ip_info}
-        foreign_ip_info = ipserviceinfo.get_ip_info(other_ip)
+
+        sys.stderr.write("\tFetching info about %15s :: " % other_ip)
+
+        if other_ip in mini_cache:
+            sys.stderr.write("Done! (PROCESS CACHE)\n")
+            foreign_ip_info = mini_cache[other_ip]
+        else:
+            foreign_ip_info = ipserviceinfo.get_ip_info(other_ip)
+            mini_cache[other_ip] = foreign_ip_info
         foreign_ip_info = {"foreign_ip::" + k: foreign_ip_info[k] for
                            k in foreign_ip_info}
+
         port_info = ipserviceinfo.get_service_info(int(other_port))
 
-        return dict(own_ip_info.items() + foreign_ip_info.items() +
-                    port_info.items())
+        ret_dic = dict(own_ip_info.items() + foreign_ip_info.items() +
+                       port_info.items())
+
+        return (ret_dic, mini_cache)
 
     def get_router_ip(self):
         import socket
@@ -100,8 +131,8 @@ class CQCEC(object):
 
         connections = [x for x in client.get_connections()
                        if x.dir == "Outgoing"]
-        info_connections = [self.get_connection_info(x)
-                            for x in connections]
+
+        info_connections = [x for x in self.get_connections_info(connections)]
         print json.dumps(info_connections)
 
     def run(self):
