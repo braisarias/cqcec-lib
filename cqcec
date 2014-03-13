@@ -60,7 +60,8 @@ class CQCEC(object):
 
         for con in connections:
             (info, mini_cache) = self.get_connection_info(con, mini_cache)
-            yield info
+            if info:
+                yield info
 
     def get_connection_info(self, connection, mini_cache):
         import sys
@@ -84,7 +85,11 @@ class CQCEC(object):
             sys.stderr.write("Done! (PROCESS CACHE)\n")
             own_ip_info = mini_cache[own_ip]
         else:
-            own_ip_info = ipserviceinfo.get_ip_info(own_ip)
+            try:
+                own_ip_info = ipserviceinfo.get_ip_info(own_ip)
+            except Exception:
+                sys.stderr.write("ERROR :(\n")
+                return ({}, mini_cache)
             mini_cache[own_ip] = own_ip_info
         own_ip_info = {"own_ip::" + k: own_ip_info[k] for k in own_ip_info}
 
@@ -94,7 +99,11 @@ class CQCEC(object):
             sys.stderr.write("Done! (PROCESS CACHE)\n")
             foreign_ip_info = mini_cache[other_ip]
         else:
-            foreign_ip_info = ipserviceinfo.get_ip_info(other_ip)
+            try:
+                foreign_ip_info = ipserviceinfo.get_ip_info(other_ip)
+            except Exception:
+                sys.stderr.write("ERROR :(\n")
+                return ({}, mini_cache)
             mini_cache[other_ip] = foreign_ip_info
         foreign_ip_info = {"foreign_ip::" + k: foreign_ip_info[k] for
                            k in foreign_ip_info}
