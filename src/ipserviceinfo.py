@@ -38,6 +38,18 @@ def get_mac_from_local_ip(ip):
 
 
 def get_device_manufacter_from_mac(mac):
+    c = cache.Cache()
+
+    mac_vendor = c.get_mac_manufacter(mac[:8])
+
+    if not mac_vendor:
+        mac_vendor = _get_device_manufacter_from_mac(mac)
+        c.set_mac_manufacter(mac[:8], mac_vendor)
+
+    return mac_vendor
+
+
+def _get_device_manufacter_from_mac(mac):
     import requests
     url = "http://www.macvendorlookup.com/api/v2/" + mac.replace(":", "-")
     resp = requests.get(url)

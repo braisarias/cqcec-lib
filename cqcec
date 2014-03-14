@@ -87,8 +87,8 @@ class CQCEC(object):
         else:
             try:
                 own_ip_info = ipserviceinfo.get_ip_info(own_ip)
-            except Exception:
-                sys.stderr.write("ERROR :(\n")
+            except Exception, e:
+                sys.stderr.write("ERROR :( -->" + e.message + "\n")
                 return ({}, mini_cache)
             mini_cache[own_ip] = own_ip_info
         own_ip_info = {"own_ip::" + k: own_ip_info[k] for k in own_ip_info}
