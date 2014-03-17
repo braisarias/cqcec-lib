@@ -34,5 +34,6 @@ setup(
     packages=["cqcec_lib"],
     install_requires=["requests", "BeautifulSoup", "whois"],
     dependency_links=[
-        "https://github.com/juliensobrier/google-safe"]
+        "https://github.com/juliensobrier/google-safe"],
+    data_files=[('/etc', ["cqcec_config.cfg"])]
 )

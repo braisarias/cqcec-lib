@@ -116,7 +116,7 @@ class IPInfoFetcherGSafeBrowsing(object):
     def read_params(self):
         import ConfigParser
         cfg = ConfigParser.ConfigParser()
-        cfg.read(["config_params.cfg"])
+        cfg.read(["/etc/cqcec_config.cfg"])
         try:
             api_key = cfg.get("google_safe_browsing", "api_key")
         except ConfigParser.NoOptionError:

@@ -29,7 +29,7 @@ class CQCEC(object):
     def read_hitron_config(self):
         import ConfigParser
         cfg = ConfigParser.ConfigParser()
-        cfg.read(["config_params.cfg"])
+        cfg.read(["/etc/cqcec_config.cfg"])
 
         try:
             usuario = cfg.get("login_hitron", "usuario")

@@ -34,7 +34,7 @@ class Cache(object):
     def read_params(self):
         import ConfigParser
         cfg = ConfigParser.ConfigParser()
-        cfg.read(["config_params.cfg"])
+        cfg.read(["/etc/cqcec_config.cfg"])
         try:
             timeout = cfg.get("cache", "timeout")
             name = cfg.get("cache", "name")
