@@ -21,7 +21,9 @@
 try:
     from setuptools import setup
 except ImportError:
-    from distutils.core import setup
+    print "You must have setuptools package installed. Try \"sudo apt-get" + \
+          " install python-setuptools\""
+    quit()
 
 dependency_links = ["https://github.com/juliensobrier/google-safe" +
                     "-browsing-lookup-python.git"]
