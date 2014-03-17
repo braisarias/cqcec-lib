@@ -19,8 +19,8 @@
 
 
 import argparse
-from src import fetchers
-from src import ipserviceinfo
+from cqcec_lib import fetchers
+from cqcec_lib import ipserviceinfo
 
 
 class CQCEC(object):
