@@ -27,15 +27,14 @@ except ImportError:
 
 dependency_links = ["https://github.com/juliensobrier/google-safe" +
                     "-browsing-lookup-python.git"]
-install_requires = ["requests", "BeautifulSoup", "whois"]
+install_requires = ["requests", "BeautifulSoup", "whois", "python-nmap"]
 
 setup(
     name="CQCEC",
     version="0.01alpha",
     scripts=["cqcec"],
     packages=["cqcec_lib"],
-    install_requires=["requests", "BeautifulSoup", "whois"],
-    dependency_links=[
-        "https://github.com/juliensobrier/google-safe"],
+    install_requires=install_requires,
+    dependency_links=dependency_links,
     data_files=[('/etc', ["cqcec_config.cfg"])]
 )

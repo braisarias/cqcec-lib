@@ -62,7 +62,13 @@ def _get_device_manufacter_from_mac(mac):
 
 
 def get_hostname_from_local_ip(ip):
-    return ""
+    import nmap
+    try:
+        nm = nmap.PortScanner()
+        host = nm.scan(hosts=ip, arguments='-sP')
+        return host['scan'][ip]['hostname']
+    except:
+        return None
 
 
 def get_local_ip_info(ip):
