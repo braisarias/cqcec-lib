@@ -66,8 +66,8 @@ def get_hostname_from_local_ip(ip):
     try:
         nm = nmap.PortScanner()
         host = nm.scan(hosts=ip, arguments='-sP')
-        return host['scan'][ip]['hostname']
-    except:
+        return host['scan'][unicode(ip)]['hostname']
+    except Exception:
         return None
 
 
