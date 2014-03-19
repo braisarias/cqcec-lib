@@ -1,0 +1,19 @@
+<ul id="connections">
+	{{#each connections}}
+	<li id="conn{{@index}}" class="well well-sm connection" onclick="app.get_info_from_connection('conn{{@index}}', '{{this.ip_origen}}', '{{this.ip_dest}}')">
+		<div class="brief">
+			<span class="ip">{{this.ip_origen}}</span>
+			<span class="glyphicon glyphicon-arrow-right"></span>
+			<span class="proto">{{this.proto}}</span>
+			<span class="glyphicon glyphicon-arrow-right"></span>
+			<span class="ip">{{this.ip_dest}}</span>
+		</div>
+		<div class="more">
+			<hr>
+			<div class="details">
+				<i class="icon-spin icon-refresh refresh-icon"></i>
+			</div>
+		</div>
+	</li>
+	{{/each}}
+</ul>
