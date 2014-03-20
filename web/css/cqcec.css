@@ -43,8 +43,9 @@ li.connection {
   width: 10em;
 }
 
-.refresh-icon{
+#refresh-icon{
   font-size: 2.5em;
+  color: white;
 }
 
 hr {

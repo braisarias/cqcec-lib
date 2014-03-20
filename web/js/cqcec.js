@@ -25,21 +25,33 @@ app.populate_connections = function (connections) {
 
 app.get_connections = function () {
 
-	$(".nav i.refresh-icon").addClass("icon-spin");
-
-	console.log("hola!!!");
+	$("#refresh-icon").addClass("icon-spin");
 
 	$.ajax({
 		url: "cgi-bin/get_connections.py"
 	}).done(function (data) {
-		console.log(data);
-		app.populate_connections(data);
+		app.connections = data;
+		app.show_filtered_data();
 	}).fail(function () {
 		console.console.log("Petition fails...");
 	}).always(function (){
-		$(".nav .refresh-icon").removeClass("icon-spin");
+		$("#refresh-icon").removeClass("icon-spin");
 	});
 };
 
+app.show_filtered_data = function () {
 
-$(document).ready(app.get_connections)
+	var filter_str, filter_data;
+
+	filter_str = $("input#filter_input").val();
+
+	filter_data = filter_str === "" ? app.connections :
+		app.connections.filter(function (item) {
+			return item.ip_origen.indexOf(filter_str) === 0;
+		}
+	);
+
+	app.populate_connections(filter_data);
+};
+
+$(document).ready(app.get_connections);
