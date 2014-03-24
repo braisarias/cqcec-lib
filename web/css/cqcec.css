@@ -122,3 +122,10 @@ border-radius:4px;
 .ip-info-box {
   width: 97%;
 }
+
+#historic_chart{
+  width: 70%;
+  height: 60%;
+  margin: auto;
+  display:block;
+}

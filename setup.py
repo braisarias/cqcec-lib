@@ -31,8 +31,8 @@ install_requires = ["requests", "BeautifulSoup", "whois", "python-nmap"]
 
 setup(
     name="CQCEC",
-    version="0.01alpha",
-    scripts=["cqcec"],
+    version="0.8Beta",
+    scripts=["cqcec", "conn_hist_daemon"],
     packages=["cqcec_lib"],
     install_requires=install_requires,
     dependency_links=dependency_links,

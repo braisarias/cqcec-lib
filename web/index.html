@@ -15,6 +15,8 @@
 	<script src="http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars.runtime-v1.3.0.js"></script>
 	<script src="templates/connectiondetails.handlebars.js"></script>
 	<script src="templates/connections.handlebars.js"></script>
+	<script src="templates/historic.handlebars.js"></script>
+	<script src="js/Chart.min.js"></script>
 	<script src="js/cqcec.js"></script>
 
 </head>
@@ -24,7 +26,7 @@
 			<div class="row clearfix">
 				<div class="col-md-12 column">
 					<header class="page-header">
-						<h1>CQCEC <small>v.0.75&beta;</small></h1>
+						<h1>CQCEC <small>v.0.8&beta;</small></h1>
 					</header>
 
 					<div class="collapse navbar-collapse">
@@ -36,6 +38,10 @@
 
 							<li id="input_tab">
 								<a href="javascript:void(0)" onclick="app.enable_input_tab()">Conexións Entrantes</a>
+							</li>
+
+							<li id="historic_tab">
+								<a href="javascript:void(0)" onclick="app.enable_historic_tab()">Histórico</a>
 							</li>
 
 						</ul>

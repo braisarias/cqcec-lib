@@ -1,0 +1,96 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# "Con quien carallo estoy conectado"
+# Copyright (C) 2014  Marcos Chavarria Teijeiro.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+from cqcec_lib import fetchers
+from cqcec_lib import ipserviceinfo
+import time
+import sqlite3
+import os.path
+
+
+def read_hitron_config():
+    import ConfigParser
+    cfg = ConfigParser.ConfigParser()
+    cfg.read(["/etc/cqcec_config.cfg"])
+
+    try:
+        usuario = cfg.get("login_hitron", "usuario")
+        password = cfg.get("login_hitron", "password")
+    except ConfigParser.NoOptionError:
+        raise ValueError("Some options were not found at config file.")
+
+    return {"user": usuario, "pass": password}
+
+
+def get_router_ip():
+    import socket
+    import struct
+    with open("/proc/net/route") as fh:
+        for line in fh:
+            fields = line.strip().split()
+            if fields[1] != '00000000' or not int(fields[3], 16) & 2:
+                continue
+            return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
+
+
+def router_connections_info(direction):
+    hitron_config = read_hitron_config()
+    ip_router = get_router_ip()
+    mac_router = ipserviceinfo.get_mac_from_local_ip(ip_router)
+
+    if mac_router[:8] in ("00:26:5b", "68:b6:fc"):
+        client = fetchers.HitronConnectionsFetcher(hitron_config["user"],
+                                                   hitron_config["pass"],
+                                                   ip_router)
+    else:
+        raise NotImplementedError("Router not supported.")
+
+    return len(client.get_connections())
+
+
+if __name__ == '__main__':
+
+    DB_NAME = "/home/ch01/.conn_hist.db"
+    ip = get_router_ip()
+
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("CREATE TABLE IF NOT EXISTS Historico (time int, conns int)")
+        conn.commit()
+
+    while True:
+        conns = router_connections_info(ip)
+        time_value = int(time.time())
+
+        try:
+            with sqlite3.connect(DB_NAME) as conn:
+                c = conn.cursor()
+                print time_value, " - ", conns
+                c.execute("INSERT INTO Historico values (:time, :value)",
+                          {"time": time_value, "value": conns})
+
+                if conn.execute("SELECT count() from Historico") \
+                   .fetchone()[0] > 2000:
+                    c.execute("DELETE FROM Historico WHERE time =(SELECT min(time) from Historico)")
+
+                conn.commit()
+        except:
+            continue
+        time.sleep(300)

@@ -54,4 +54,64 @@ app.show_filtered_data = function () {
 	app.populate_connections(filter_data);
 };
 
+app.show_historic = function () {
+	var ctx;
+
+	var html_body = Handlebars.templates.historic({});
+	$("#web_body").html(html_body);
+
+	ctx = document.getElementById("historic_chart").getContext("2d");
+
+	$.ajax({
+		url: "cgi-bin/get-historic.py"
+	}).done(function (data) {
+
+		console.log(data);
+
+		var x = Math.floor(data.length / 6);
+
+		new Chart(ctx).Line({
+			labels: data.map(function (item,index) {
+				var dt = new Date(0);
+				if (index%x == 0){
+					dt.setUTCSeconds(item.time);
+					return dt.getHours().toString() + ":" + dt.getMinutes().toString();
+				} else {
+					return "";
+				}
+			}),
+			datasets: [{
+				fillColor : "rgba(220,220,220,0.5)",
+				strokeColor : "rgba(220,220,220,1)",
+				pointColor : "rgba(220,220,220,1)",
+				pointStrokeColor : "#fff",
+				data : data.map(function (item) {return item.conns;})
+			}]
+		},
+		{
+			scaleShowLabels: true,
+			scaleOverlay:true
+		});
+	});
+};
+
+
+app.enable_historic_tab = function () {
+	$("ul.nav-pills li").removeClass("active");
+	$("li#historic_tab").addClass("active");
+	app.show_historic();
+}
+
+app.enable_output_tab = function () {
+	$("ul.nav-pills li").removeClass("active");
+	$("li#output_tab").addClass("active");
+	app.get_connections("Outgoing");
+}
+
+app.enable_input_tab = function () {
+	$("ul.nav-pills li").removeClass("active");
+	$("li#input_tab").addClass("active");
+	app.get_connections("Incoming");
+}
+
 $(document).ready(app.get_connections);
