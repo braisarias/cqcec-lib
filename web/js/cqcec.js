@@ -54,10 +54,17 @@ app.show_filtered_data = function () {
 	app.populate_connections(filter_data);
 };
 
+app.get_date_string = function (epoch) {
+	var dt = new Date(0);
+	var month_dic = ["Xa", "Fe","Ma","Ap", "M", "Xñ", "Xl","Ag", "Se", "Ou", "No", "De"];
+	dt.setUTCSeconds(epoch);
+	return dt.getDate().toString() + month_dic[dt.getMonth()] + " " + dt.getHours().toString() + ":" + dt.getMinutes().toString();
+};
+
 app.show_historic = function () {
 	var ctx;
 
-	var html_body = Handlebars.templates.historic({});
+	var html_body = Handlebars.templates.historical({});
 	$("#web_body").html(html_body);
 
 	ctx = document.getElementById("historic_chart").getContext("2d");
@@ -66,19 +73,18 @@ app.show_historic = function () {
 		url: "cgi-bin/get-historic.py"
 	}).done(function (data) {
 
-		console.log(data);
-
 		var x = Math.floor(data.length / 6);
 
 		new Chart(ctx).Line({
-			labels: data.map(function (item,index) {
-				var dt = new Date(0);
-				if (index%x == 0){
-					dt.setUTCSeconds(item.time);
-					return dt.getHours().toString() + ":" + dt.getMinutes().toString();
-				} else {
-					return "";
+			labels: data.map(function (item, index) {
+
+				if 	((index !== data.length - 1 && (data[index + 1].time - data[index].time) > 2000) ||
+					(index !== 0 && (data[index].time - data[index - 1].time) > 2000) ||
+					(index % x == 0)){
+					return app.get_date_string(item.time)
 				}
+
+				return ""
 			}),
 			datasets: [{
 				fillColor : "rgba(220,220,220,0.5)",

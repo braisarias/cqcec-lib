@@ -124,8 +124,12 @@ border-radius:4px;
 }
 
 #historic_chart{
-  width: 70%;
-  height: 60%;
   margin: auto;
+  margin-top: 5vh;
   display:block;
+}
+
+#web_body {
+  display: block;
+  height: 70vh;
 }
