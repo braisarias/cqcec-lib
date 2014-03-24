@@ -9,7 +9,6 @@ app.get_info_from_connection = function (a, ip_origen, ip_dest){
 		url: "cgi-bin/get_connection_details.py",
 		data: {ip_origen: ip_origen, ip_destino: ip_dest}
 	}).done(function (data) {
-		console.log(data);
 		var html_body = Handlebars.templates.connectiondetails(data);
 		$("#connections #" + a + " .details").html(html_body);
 	}).fail(function() {
@@ -23,12 +22,13 @@ app.populate_connections = function (connections) {
 	$("#web_body").html(html_body);
 };
 
-app.get_connections = function () {
+app.get_connections = function (direct) {
 
 	$("#refresh-icon").addClass("icon-spin");
 
 	$.ajax({
-		url: "cgi-bin/get_connections.py"
+		url: "cgi-bin/get_connections.py",
+		data: {direction: direct}
 	}).done(function (data) {
 		app.connections = data;
 		app.show_filtered_data();

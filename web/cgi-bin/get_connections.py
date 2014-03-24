@@ -65,12 +65,12 @@ def router_connections_info(direction):
     connections = []
 
     for x in client.get_connections():
-        if not x.dir == "Outgoing":
+        if not x.dir == direction:
             continue
         try:
             proto = socket.getservbyport(int(x.port_dest), x.proto.lower())
         except Exception:
-            proto = "unknown"
+            proto = str(x.port_dest) + "/" + str(x.proto.lower())
 
         connections.append({"ip_origen": x.ip_orig,
                             "ip_dest": x.ip_dest,
@@ -83,7 +83,17 @@ if __name__ == '__main__':
     print 'Access-Control-Allow-Origin: *'
     print 'Access-Control-Allow-Methods: GET'
     print ''
+
+    arguments = cgi.FieldStorage()
+
     try:
-        print router_connections_info(get_router_ip())
+        direct = arguments["direction"].value
+        if direct not in ("Outgoing", "Incoming"):
+            direct = "Outgoing"
+    except:
+        direct = "Outgoing"
+
+    try:
+        print router_connections_info(direct)
     except Exception, e:
         print e
