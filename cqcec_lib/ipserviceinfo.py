@@ -23,18 +23,41 @@ import ipinfofetchers
 import portinfofetchers
 
 
-def get_mac_from_local_ip(ip):
+def get_mac_fom_arp_table(ip):
     import subprocess
-    try:
-        subprocess.check_output(["ping", "-c 1", ip])
-    except:
-        return ""
     arp_table = subprocess.check_output(["arp", "-an"]).strip().split("\n")
     for line in arp_table:
         fields = line.split(" ")
         if fields[1][1:-1] == ip:
             return fields[3]
     return ""
+
+
+def _do_ping(ip):
+    import subprocess
+    import time
+    with open("/dev/null") as devnull:
+        proc = subprocess.Popen(["ping", "-c 1", ip], stdout=devnull, stderr=devnull)
+        t = time.time()
+        while time.time() - t < 1.5 and proc.poll() is None:
+            pass
+        if proc.returncode is None:
+            proc.terminate()
+            return False
+        else:
+            return True
+
+
+def get_mac_from_local_ip(ip):
+    mac = get_mac_fom_arp_table(ip)
+    if mac != "":
+        return mac
+    try:
+        _do_ping(ip)
+    except:
+        pass
+    return get_mac_fom_arp_table(ip)
+
 
 
 def get_device_manufacter_from_mac(mac):
@@ -80,12 +103,48 @@ def get_local_ip_info(ip):
             "hostname": hostname}
 
 
+def get_my_hostname():
+    import subprocess
+    return subprocess.check_output(["hostname"])
+
+
+def get_my_info(ip):
+    import ifcfg
+    int_dic = ifcfg.get_parser().interfaces
+    for inte in int_dic:
+        if int_dic[inte]["inet"] != ip:
+            continue
+        return {"ip": ip,
+                "mac": int_dic[inte]["ether"],
+                "mac_vendor": get_device_manufacter_from_mac(int_dic[inte]["ether"]),
+                "hostname": get_my_hostname()}
+    return {}
+
+
+def ip_is_me(ip):
+    import ifcfg
+    int_dic = ifcfg.get_parser().interfaces
+    ips = [int_dic[x]["inet"] for x in int_dic]
+    return ip in filter(lambda x: x is not None, ips)
+
+
+def ip_is_local(ip):
+    if ip.startswith("10."):
+        return True
+    if ip.startswith("192.168."):
+        return True
+    if ip.startswith("172.") and ip.split(".")[1] in range(16, 31):
+        return True
+    return False
+
 def get_ip_info(ip):
     import sys
 
-    if ip.startswith("10.") or ip.startswith("192.168.") or \
-       ip.startswith("127.") or \
-       (ip.startswith("172.") and ip.split(".")[1] in range(16, 31)):
+    if ip_is_me(ip):
+        sys.stderr.write("Done! (ME)\n")
+        return get_my_info(ip)
+
+    if ip_is_local(ip):
         sys.stderr.write("Done! (LOCAL)\n")
         return get_local_ip_info(ip)
 
