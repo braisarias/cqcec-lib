@@ -57,10 +57,17 @@ class ConnectionInfo(object):
         self.ip_dest = ip_dest
         self.port_dest = port_dest
         self.dir = direction
+        self.number = 1
 
     def json_dump(self):
         import json
         return json.dumps({"ip_orig": self.ip_orig, "port_orig":
                            self.port_orig, "ip_dest": self.ip_dest,
                            "port_dest": self.port_dest, "proto":
-                           self.proto, "dir": self.dir})
+                           self.proto, "dir": self.dir, "number": self.number})
+
+    def __eq__(self, other):
+        return self.port_orig == other.port_orig \
+               and self.proto == other.proto \
+               and self.ip_dest == other.ip_dest \
+               and self.port_dest == other.port_dest
