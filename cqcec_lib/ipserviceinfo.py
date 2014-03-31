@@ -59,7 +59,6 @@ def get_mac_from_local_ip(ip):
     return get_mac_fom_arp_table(ip)
 
 
-
 def get_device_manufacter_from_mac(mac):
     c = cache.Cache()
 
@@ -121,6 +120,12 @@ def get_my_info(ip):
     return {}
 
 
+def ip_is_multicast(ip):
+    if ip.split(".")[0] in range(224, 240):
+        return True
+    return False
+
+
 def ip_is_me(ip):
     import ifcfg
     int_dic = ifcfg.get_parser().interfaces
@@ -136,6 +141,7 @@ def ip_is_local(ip):
     if ip.startswith("172.") and ip.split(".")[1] in range(16, 31):
         return True
     return False
+
 
 def get_ip_info(ip):
     import sys
