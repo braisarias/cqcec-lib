@@ -57,7 +57,7 @@ class ConnectionInfo(object):
         self.ip_dest = ip_dest
         self.port_dest = port_dest
         self.dir = direction
-        self.number = 1
+        self.number = 0
 
     def json_dump(self):
         import json
@@ -67,7 +67,10 @@ class ConnectionInfo(object):
                            self.proto, "dir": self.dir, "number": self.number})
 
     def __eq__(self, other):
-        return self.port_orig == other.port_orig \
+        my_important_port = self.port_dest if self.dir.lower() == "outgoing" else self.port_orig
+        other_important_port = other.port_dest if other.dir.lower() == "outgoing" else other.port_orig
+        return my_important_port == other_important_port \
                and self.proto == other.proto \
                and self.ip_dest == other.ip_dest \
-               and self.port_dest == other.port_dest
+               and self.ip_orig == other.ip_orig \
+               and self.dir == other.dir
