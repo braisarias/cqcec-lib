@@ -121,7 +121,7 @@ def get_my_info(ip):
 
 
 def ip_is_multicast(ip):
-    if ip.split(".")[0] in range(224, 240):
+    if int(ip.split(".")[0]) in range(224, 240):
         return True
     return False
 
