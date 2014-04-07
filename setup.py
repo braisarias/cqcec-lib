@@ -25,16 +25,17 @@ except ImportError:
           " install python-setuptools\""
     quit()
 
-dependency_links = ["https://github.com/juliensobrier/google-safe" +
-                    "-browsing-lookup-python.git"]
-install_requires = ["requests", "BeautifulSoup", "whois", "python-nmap"]
+dependency_links = ["git+https://github.com/juliensobrier/google-safe-browsing-lookup-python.git#egg=google-safe-browsing-lookup-python",
+                    "git+https://github.com/ftao/python-ifcfg.git#egg=ifcfg"]
+install_requires = ["requests", "BeautifulSoup", "whois", "python-nmap",
+                    "ifcfg"]
 
 setup(
     name="CQCEC",
-    version="0.8Beta",
+    version="0.97Beta",
     scripts=["cqcec", "conn_hist_daemon"],
     packages=["cqcec_lib"],
-    install_requires=install_requires,
     dependency_links=dependency_links,
+    install_requires=install_requires,
     data_files=[('/etc', ["cqcec_config.cfg"])]
 )
