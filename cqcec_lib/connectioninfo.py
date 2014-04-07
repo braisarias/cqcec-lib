@@ -39,7 +39,7 @@ class ConnectionInfo(object):
         return direct.lower() in ("incoming", "outgoing")
 
     def __init__(self, ip_orig, port_orig, ip_dest, port_dest, proto,
-                 direction):
+                 direction, size_in, size_out):
         super(ConnectionInfo, self).__init__()
         if not self.check_ip(ip_orig):
             raise ValueError("IP origen")
@@ -58,13 +58,17 @@ class ConnectionInfo(object):
         self.port_dest = port_dest
         self.dir = direction
         self.number = 0
+        self.size_in = float(size_in)
+        self.size_out = float(size_out)
 
     def json_dump(self):
         import json
         return json.dumps({"ip_orig": self.ip_orig, "port_orig":
                            self.port_orig, "ip_dest": self.ip_dest,
                            "port_dest": self.port_dest, "proto":
-                           self.proto, "dir": self.dir, "number": self.number})
+                           self.proto, "dir": self.dir, "number": self.number,
+                           "size_in": self.size_in,
+                           "size_out": self.size_out})
 
     def __eq__(self, other):
         my_important_port = self.port_dest if self.dir.lower() == "outgoing" else self.port_orig
