@@ -22,6 +22,8 @@ from cqcec_lib import fetchers
 from cqcec_lib import ipserviceinfo
 import time
 import sqlite3
+import signal
+import os
 
 
 def get_historical_bd_name():
@@ -32,6 +34,18 @@ def get_historical_bd_name():
     try:
         bd_name = cfg.get("historical", "bd_name")
         return bd_name
+    except ConfigParser.NoOptionError:
+        raise ValueError("Some options were not found at config file.")
+
+
+def get_pid_filename():
+    import ConfigParser
+    cfg = ConfigParser.ConfigParser()
+    cfg.read(["/etc/cqcec_config.cfg"])
+
+    try:
+        pid_file = cfg.get("historical", "pid_file")
+        return pid_file
     except ConfigParser.NoOptionError:
         raise ValueError("Some options were not found at config file.")
 
@@ -61,47 +75,67 @@ def get_router_ip():
             return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
 
 
-def router_connections_info(direction):
-    hitron_config = read_hitron_config()
+def router_connections_info():
+    from cqcec_lib import connectioninfo
+    import json
     ip_router = get_router_ip()
     mac_router = ipserviceinfo.get_mac_from_local_ip(ip_router)
 
     if mac_router[:8] in ("00:26:5b", "68:b6:fc"):
+        hitron_config = read_hitron_config()
         client = fetchers.HitronConnectionsFetcher(hitron_config["user"],
                                                    hitron_config["pass"],
                                                    ip_router)
     else:
         raise NotImplementedError("Router not supported.")
 
-    return len(client.get_connections())
+    conns = client.get_connections()
 
+    return json.dumps(conns, default=connectioninfo.ConnectionInfo.json_dump)
+
+
+def force_insert_data(signum, stack):
+    print "Signal received :0"
+    conns = router_connections_info()
+    insert_data(bd_name, conns)
+
+
+def insert_data(bd_name, conns):
+    with sqlite3.connect(bd_name) as conn:
+        c = conn.cursor()
+        time_value = int(time.time())
+        print "Inserting data at %i" % time_value
+        c.execute("INSERT INTO Historico values (:time, :value)",
+                  {"time": time_value, "value": conns})
+
+        if conn.execute("SELECT count() from Historico") \
+           .fetchone()[0] > 2000:
+            c.execute("DELETE FROM Historico WHERE time =(SELECT min(time) from Historico)")
+
+        conn.commit()
 
 if __name__ == '__main__':
 
     bd_name = get_historical_bd_name()
-    ip = get_router_ip()
+    pid_file = get_pid_filename()
+
+    print "DB Name::", bd_name
+    print "PID file::", pid_file
+
+    with open(pid_file, "w") as f:
+        f.write(str(os.getpid()))
+
+    signal.signal(signal.SIGUSR1, force_insert_data)
 
     with sqlite3.connect(bd_name) as conn:
         c = conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS Historico (time int, conns int)")
+        c.execute("CREATE TABLE IF NOT EXISTS Historico (time int, conns text)")
         conn.commit()
 
     while True:
-        conns = router_connections_info(ip)
-        time_value = int(time.time())
-
         try:
-            with sqlite3.connect(bd_name) as conn:
-                c = conn.cursor()
-                print time_value, " - ", conns
-                c.execute("INSERT INTO Historico values (:time, :value)",
-                          {"time": time_value, "value": conns})
-
-                if conn.execute("SELECT count() from Historico") \
-                   .fetchone()[0] > 2000:
-                    c.execute("DELETE FROM Historico WHERE time =(SELECT min(time) from Historico)")
-
-                conn.commit()
+            conns = router_connections_info()
+            insert_data(bd_name, conns)
         except:
             continue
         time.sleep(300)

@@ -62,13 +62,15 @@ class ConnectionInfo(object):
         self.size_out = float(size_out)
 
     def json_dump(self):
-        import json
-        return json.dumps({"ip_orig": self.ip_orig, "port_orig":
-                           self.port_orig, "ip_dest": self.ip_dest,
-                           "port_dest": self.port_dest, "proto":
-                           self.proto, "dir": self.dir, "number": self.number,
-                           "size_in": self.size_in,
-                           "size_out": self.size_out})
+        return {"ip_orig": self.ip_orig,
+                "port_orig": self.port_orig,
+                "ip_dest": self.ip_dest,
+                "port_dest": self.port_dest,
+                "proto": self.proto,
+                "dir": self.dir,
+                "number": self.number,
+                "size_in": self.size_in,
+                "size_out": self.size_out}
 
     def __eq__(self, other):
         my_important_port = self.port_dest if self.dir.lower() == "outgoing" else self.port_orig
