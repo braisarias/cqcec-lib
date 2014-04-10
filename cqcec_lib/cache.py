@@ -96,3 +96,28 @@ class Cache(object):
             c.execute("INSERT INTO MACCache VALUES (:mac, :manufacter)",
                       {"mac": mac, "manufacter": manufacter})
             conn.commit()
+
+    def get_domain(self, ip):
+        with sqlite3.connect(self.cache_file) as conn:
+            try:
+                c = conn.execute("SELECT * FROM DomainCache WHERE ip=:ip",
+                                 {"ip": ip}).fetchone()
+                if (c is None):
+                    return ""
+                (ip_db, domain) = c
+
+                assert(ip == ip_db)
+
+                return domain
+            except sqlite3.OperationalError:
+                return ""
+
+    def set_domain(self, ip, domain):
+        with sqlite3.connect(self.cache_file) as conn:
+            c = conn.cursor()
+            c.execute("CREATE TABLE IF NOT EXISTS DomainCache (ip text, " +
+                      "domain text)")
+            c.execute("DELETE FROM DomainCache WHERE ip=:ip", {"ip": ip})
+            c.execute("INSERT INTO DomainCache VALUES (:ip, :domain)",
+                      {"ip": ip, "domain": domain})
+            conn.commit()

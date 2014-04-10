@@ -176,6 +176,68 @@ def get_ip_info(ip):
         return info
 
 
+def read_hitron_config():
+    import ConfigParser
+    cfg = ConfigParser.ConfigParser()
+    cfg.read(["/etc/cqcec_config.cfg"])
+
+    try:
+        usuario = cfg.get("login_hitron", "usuario")
+        password = cfg.get("login_hitron", "password")
+    except ConfigParser.NoOptionError:
+        raise ValueError("Some options were not found at config file.")
+
+    return {"user": usuario, "pass": password}
+
+
+def get_router_ip():
+    import socket
+    import struct
+    with open("/proc/net/route") as fh:
+        for line in fh:
+            fields = line.strip().split()
+            if fields[1] != '00000000' or not int(fields[3], 16) & 2:
+                continue
+            return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
+
+
+def router_dns_cache():
+    from cqcec_lib import dnscachefetcher
+    ip_router = get_router_ip()
+    mac_router = get_mac_from_local_ip(ip_router)
+
+    if mac_router[:8] in ("00:26:5b", "68:b6:fc"):
+        hitron_config = read_hitron_config()
+        client = dnscachefetcher.HitronDNSFetcher(hitron_config["user"],
+                                                  hitron_config["pass"],
+                                                  ip_router)
+    else:
+        raise NotImplementedError("Router not supported.")
+
+    return client.get_dict()
+
+
+def get_domain_info(ip, dns_dict=None):
+    cachefetcher = cache.Cache()
+
+    try:
+        domain = cachefetcher.get_domain(ip)
+    except:
+        domain = ""
+
+    if domain:
+        return domain
+
+    try:
+        if(dns_dict is None):
+            dns_dict = router_dns_cache()
+        if ip in dns_dict:
+            cachefetcher.set_domain(ip, dns_dict[ip])
+            return dns_dict[ip]
+    except:
+        return ""
+
+
 def get_service_info(port):
     portinfofetcher = portinfofetchers.PortInfoFetcher()
     return portinfofetcher.get_info(port)
