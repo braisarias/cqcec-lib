@@ -39,14 +39,18 @@ class ConnectionInfo(object):
         return direct.lower() in ("incoming", "outgoing")
 
     def __init__(self, ip_orig, port_orig, ip_dest, port_dest, proto,
-                 direction, size_in, size_out):
+                 direction, size_in, size_out, nat_ip, nat_port):
         super(ConnectionInfo, self).__init__()
         if not self.check_ip(ip_orig):
             raise ValueError("IP origen")
         if not self.check_ip(ip_dest):
             raise ValueError("IP dest")
+        if not self.check_ip(nat_ip):
+            raise ValueError("NAT IP")
         if port_orig != "" and not self.check_port(port_orig):
             raise ValueError("port origen")
+        if port_orig != "" and not self.check_port(nat_port):
+            raise ValueError("NAT PORT")
         if port_dest != "" and not self.check_port(port_dest):
             raise ValueError("Port dest")
         if direction != "" and not self.check_dir(direction):
@@ -60,6 +64,8 @@ class ConnectionInfo(object):
         self.number = 0
         self.size_in = float(size_in)
         self.size_out = float(size_out)
+        self.port_nat = nat_port
+        self.ip_nat = nat_ip
 
     def json_dump(self):
         return {"ip_orig": self.ip_orig,
@@ -70,7 +76,10 @@ class ConnectionInfo(object):
                 "dir": self.dir,
                 "number": self.number,
                 "size_in": self.size_in,
-                "size_out": self.size_out}
+                "size_out": self.size_out,
+                "ip_nat": self.ip_nat,
+                "port_nat": self.port_nat
+                }
 
     def __eq__(self, other):
         my_important_port = self.port_dest if self.dir.lower() == "outgoing" else self.port_orig

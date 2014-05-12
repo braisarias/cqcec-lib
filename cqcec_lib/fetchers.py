@@ -1,4 +1,4 @@
-#!/usr/bin/python
+    #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # "Con quien carallo estoy conectado"
@@ -56,4 +56,4 @@ class HitronConnectionsFetcher(object):
         text = self.get_telnet_dump()
         connections_list = regexp.findall(text)
         return [connectioninfo.ConnectionInfo(x[2], x[3], x[6], x[7], x[1],
-                x[10], x[8], x[9]) for x in connections_list]
+                x[10], x[8], x[9], x[4], x[5]) for x in connections_list]
